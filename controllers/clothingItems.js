@@ -38,9 +38,10 @@ const deleteItem = (req, res) => {
     .then((item) => res.status(OK).send(item))
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNOT_FOUNDError") {
+      if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: err.message });
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
       return res.status(SERVER_ERROR).send({ message: err.message });
@@ -50,15 +51,39 @@ const deleteItem = (req, res) => {
 const likeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.params.itemId } },
     { new: true }
-  );
+  )
+    .orFail()
+    .then((item) => res.status(OK).send(item))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      return res.status(SERVER_ERROR).send({ message: err.message });
+    });
 
 const dislikeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.params.itemId } },
     { new: true }
-  );
+  )
+    .orFail()
+    .then((item) => res.status(OK).send(item))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      return res.status(SERVER_ERROR).send({ message: err.message });
+    });
 
 module.exports = { getItems, createItem, deleteItem, likeItem, dislikeItem };
