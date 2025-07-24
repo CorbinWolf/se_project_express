@@ -41,12 +41,12 @@ const deleteItem = (req, res) => {
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then((item) => {
-      if (item.owner.toString() !== userId.toString()) {
+      if (String(item.owner) !== userId) {
         return res
           .status(FORBIDDEN)
           .send({ message: "You are not authorized to delete this item" });
       }
-      return res.send(item);
+      return res.deleteOne();
     })
     .catch((err) => {
       console.error(err);
