@@ -8,7 +8,6 @@ const {
   CREATED,
   BAD_REQUEST,
   UNAUTHORIZED,
-  NOT_FOUND,
   CONFLICT,
   SERVER_ERROR,
 } = require("../utils/errors");
