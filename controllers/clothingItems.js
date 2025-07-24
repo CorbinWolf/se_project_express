@@ -38,7 +38,7 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
       if (String(item.owner) !== userId) {
