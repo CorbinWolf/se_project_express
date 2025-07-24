@@ -20,8 +20,9 @@ const getItems = (req, res) => {
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
+  const owner = req.user._id;
 
-  ClothingItem.create({ name, weather, imageUrl })
+  ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(CREATED).send(item))
     .catch((err) => {
       console.error(err);
@@ -38,15 +39,17 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
-      if (String(item.owner) !== userId) {
+      if (String(item.owner) !== String(userId)) {
         return res
           .status(FORBIDDEN)
           .send({ message: "You are not authorized to delete this item" });
       }
-      return ClothingItem.delete(item);
+      return ClothingItem.deleteOne({ _id: itemId }).then(() => {
+        res.send({ message: "Item deleted successfully" });
+      });
     })
     .catch((err) => {
       console.error(err);
