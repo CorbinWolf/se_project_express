@@ -8,6 +8,7 @@ const {
   CREATED,
   BAD_REQUEST,
   UNAUTHORIZED,
+  NOT_FOUND,
   CONFLICT,
   SERVER_ERROR,
 } = require("../utils/errors");
@@ -21,9 +22,16 @@ const updateUserProfile = (req, res) => {
     { name, avatar },
     { new: true, runValidators: true }
   )
+    .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
       console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid user data" });
+      }
       return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
@@ -38,6 +46,9 @@ const getCurrentUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
       if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
@@ -86,12 +97,9 @@ const createUser = (req, res) => {
     .hash(password, 10)
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
-      res.status(CREATED).send({
-        _id: user._id,
-        name: user.name,
-        avatar: user.avatar,
-        email: user.email,
-      });
+      const userObj = user.toObject();
+      delete userObj.password;
+      return res.status(CREATED).send(userObj);
     })
     .catch((err) => {
       console.error(err);
