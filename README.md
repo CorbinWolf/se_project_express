@@ -10,6 +10,14 @@ The database manages users and clothing items for What To Wear app. It packages 
 
 The structure is comprised of Modules and the database is made with Express and MongoDB.
 
-## Further Inprovments
+## Deployment
 
--connect database with What To Wear
+This project is deployed on Google Cloud:
+
+- [CLICK HERE](https://wtwr.glacialpower.com/)!
+
+## Frontend
+
+You can access the frontend through this link:
+
+- [CLICK HERE](https://github.com/CorbinWolf/se_project_react)!
