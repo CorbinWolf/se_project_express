@@ -5,22 +5,19 @@ const NotFoundError = require("../errors/NotFoundError");
 
 const { CREATED } = require("../utils/errors");
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch((err) => {
-      return next(err);
-    });
+    .catch((err) => next(err));
 };
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(CREATED).send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Couldn't validate item"));
       }
@@ -28,7 +25,7 @@ const createItem = (req, res) => {
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
@@ -45,8 +42,6 @@ const deleteItem = (req, res) => {
       });
     })
     .catch((err) => {
-      console.error(err);
-
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Item not found"));
       }
@@ -57,7 +52,7 @@ const deleteItem = (req, res) => {
     });
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -66,7 +61,6 @@ const likeItem = (req, res) =>
     .orFail()
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Item not found"));
       }
@@ -76,7 +70,7 @@ const likeItem = (req, res) =>
       return next(err);
     });
 
-const dislikeItem = (req, res) =>
+const dislikeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -85,7 +79,6 @@ const dislikeItem = (req, res) =>
     .orFail()
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Item not found"));
       }

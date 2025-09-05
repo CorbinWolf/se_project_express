@@ -10,7 +10,7 @@ const ConflictError = require("../errors/ConflictError");
 const { JWT_SECRET } = require("../utils/config");
 const { CREATED } = require("../utils/errors");
 
-const updateUserProfile = (req, res) => {
+const updateUserProfile = (req, res, next) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
@@ -22,7 +22,6 @@ const updateUserProfile = (req, res) => {
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
-      console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("User not found"));
       }
@@ -33,14 +32,13 @@ const updateUserProfile = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
 
   User.findById(userId)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
-      console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("User not found"));
       }
@@ -51,7 +49,7 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const loginUser = (req, res) => {
+const loginUser = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -66,7 +64,6 @@ const loginUser = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      console.error(err);
       if (err.message === "Incorrect email or password") {
         return next(new UnauthorizedError("Incorrect email or password"));
       }
@@ -77,7 +74,7 @@ const loginUser = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   bcrypt
@@ -89,7 +86,6 @@ const createUser = (req, res) => {
       return res.status(CREATED).send(userObj);
     })
     .catch((err) => {
-      console.error(err);
       if (err.code === 11000) {
         return next(new ConflictError("Email already in use"));
       }
